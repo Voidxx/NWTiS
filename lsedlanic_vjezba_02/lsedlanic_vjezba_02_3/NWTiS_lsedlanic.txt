@@ -1,0 +1,6 @@
+#NWTIS lsedlanic 2023.
+#Wed Mar 08 12:26:32 CET 2023
+ipadresa=127.0.0.1
+ivica=ivic
+korime=perica
+lozinka=peri\u00C4\u0087
