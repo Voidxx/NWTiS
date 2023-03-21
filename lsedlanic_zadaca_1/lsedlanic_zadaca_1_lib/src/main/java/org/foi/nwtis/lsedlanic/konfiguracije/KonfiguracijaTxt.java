@@ -43,7 +43,7 @@ public class KonfiguracijaTxt extends KonfiguracijaApstraktna {
 		var tip = Konfiguracija.dajTipKonfiguracije(datoteka);
 		if (tip == null || tip.compareTo(TIP) != 0) {
 			throw new NeispravnaKonfiguracija("Datoteka '" + datoteka + "' nije ispravnog tipa: '" + TIP + "'");
-		} else if (Files.exists(putanja) && (Files.isDirectory(putanja) || !Files.isWritable(putanja)))
+		} else if (Files.exists(putanja) && ((Files.isDirectory(putanja) || !Files.isWritable(putanja))))
 			throw new NeispravnaKonfiguracija(
 					"Datoteka '" + datoteka + "' je direktorij ili nije moguće pisati u nju.");
 
@@ -62,7 +62,7 @@ public class KonfiguracijaTxt extends KonfiguracijaApstraktna {
 		var tip = Konfiguracija.dajTipKonfiguracije(datoteka);
 		if (tip == null || tip.compareTo(TIP) != 0) {
 			throw new NeispravnaKonfiguracija("Datoteka '" + datoteka + "' nije ispravnog tipa: '" + TIP + "'");
-		} else if (Files.exists(putanja) && (Files.isDirectory(putanja) || !Files.isReadable(putanja)))
+		} else if (Files.exists(putanja) && ((Files.isDirectory(putanja) || !Files.isReadable(putanja))))
 			throw new NeispravnaKonfiguracija(
 					"Datoteka '" + datoteka + "' je direktorij ili nije moguće čitati iz nje.");
 

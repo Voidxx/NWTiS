@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.foi.nwtis.Konfiguracija;
@@ -16,9 +17,16 @@ public class MrezniRadnik extends Thread {
 	protected Konfiguracija konfig;
 	private int ispis = 0;
 
+	public MrezniRadnik(Socket mreznaUticnica, Konfiguracija konfig) {
+		super();
+		this.mreznaUticnica = mreznaUticnica;
+		this.konfig = konfig;
+		this.ispis = Integer.parseInt(this.konfig.dajPostavku("ispis"));
+	}
+
 	@Override
 	public synchronized void start() {
-		// tu radis svoje
+		// TU RADIŠ SVOJE
 		super.start();
 	}
 
@@ -27,33 +35,40 @@ public class MrezniRadnik extends Thread {
 		try {
 			var citac = new BufferedReader(
 					new InputStreamReader(this.mreznaUticnica.getInputStream(), Charset.forName("UTF-8")));
-			var citac = new BufferedWriter(
+			var pisac = new BufferedWriter(
 					new OutputStreamWriter(this.mreznaUticnica.getOutputStream(), Charset.forName("UTF-8")));
 			var poruka = new StringBuilder();
 
 			while (true) {
 				var red = citac.readLine();
-				if (red == null) {
+				if (red == null)
 					break;
 
-					if (this.ispis == 1) {
-						Logger.getGlobal().log(Level.INFO, red);
-					}
-					poruka.append(red);
+				if (this.ispis == 1) {
+					Logger.getGlobal().log(Level.INFO, red);
 				}
-				this.mreznaUticnica.shutdownInput();
-				string odgovor = this.obradiZahtjev(poruka.toString());
-
+				poruka.append(red);
 			}
+			this.mreznaUticnica.shutdownInput();
+			String odgovor = this.obradiZahtjev(poruka.toString());
+			pisac.write(odgovor);
+			pisac.flush();
+			this.mreznaUticnica.shutdownOutput();
+			this.mreznaUticnica.close();
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
+	private String obradiZahtjev(String string) {
+		return "OK";
+	}
+
 	@Override
 	public void interrupt() {
-		// tu radis svoje
+		// TU RADIŠ SVOJE
 		super.interrupt();
 	}
 

@@ -1,6 +1,8 @@
 package org.foi.nwtis.lsedlanic.zadaca_1;
 
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,24 +30,34 @@ public class GlavniPosluzitelj {
 	protected Map<String, Lokacija> lokacije;
 	protected Map<String, Uredaj> uredaji;
 	private int ispis = 0;
+	private int mreznaVrata = 8001;
+	private int brojCekaca = 10;
 
-	public GlavniPosluzitelj(Konfiguracija config) {
+	public GlavniPosluzitelj(Konfiguracija konf) {
 		this.konf = konf;
 //		this.brojRadnika = Integer.parseInt(konf.dajPostavku("brojRadnika"));
 //		this.maksVrijemeNeaktivnosti = Integer.parseInt(konf.dajPostavku("maksVrijemeNeaktivnosti"));
-		this.ispis = Integer.parseInt(konf.dajPostavku("Ispis"));
+		this.ispis = Integer.parseInt(konf.dajPostavku("ispis"));
+		this.mreznaVrata = Integer.parseInt(konf.dajPostavku("mreznaVrata"));
+		this.brojCekaca = Integer.parseInt(konf.dajPostavku("brojCekaca"));
 	}
 
 	public void pokreniPosluzitelja() {
 		try {
 			this.ucitajKorisnike();
+			ServerSocket posluzitelj = new ServerSocket(this.mreznaVrata, this.brojCekaca);
+			while (true) {
+				Socket veza = posluzitelj.accept();
+				MrezniRadnik mr = new MrezniRadnik(veza, konf);
+				mr.start();
+			}
 		} catch (IOException e) {
 			Logger.getGlobal().log(Level.SEVERE, e.getMessage());
 		}
 		// TODO ucitaj ostale podatke (lokacija, uredaji)
 	}
 
-	private void ucitajKorisnike() throws IOException {
+	public void ucitajKorisnike() throws IOException {
 		var nazivDatoteke = this.konf.dajPostavku("datotekaKorisnika");
 		var citac = new CitanjeKorisnika();
 		this.korisnici = citac.ucitajDatoteku(nazivDatoteke);
