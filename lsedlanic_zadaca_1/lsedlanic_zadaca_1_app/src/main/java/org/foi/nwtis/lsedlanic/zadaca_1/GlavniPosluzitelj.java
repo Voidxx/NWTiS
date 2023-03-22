@@ -32,6 +32,7 @@ public class GlavniPosluzitelj {
 	private int ispis = 0;
 	private int mreznaVrata = 8001;
 	private int brojCekaca = 10;
+	private boolean kraj;
 
 	public GlavniPosluzitelj(Konfiguracija konf) {
 		this.konf = konf;
@@ -45,16 +46,20 @@ public class GlavniPosluzitelj {
 	public void pokreniPosluzitelja() {
 		try {
 			this.ucitajKorisnike();
-			ServerSocket posluzitelj = new ServerSocket(this.mreznaVrata, this.brojCekaca);
-			while (true) {
-				Socket veza = posluzitelj.accept();
-				MrezniRadnik mr = new MrezniRadnik(veza, konf);
-				mr.start();
-			}
+			pripremiPosluzitelja();
 		} catch (IOException e) {
 			Logger.getGlobal().log(Level.SEVERE, e.getMessage());
 		}
 		// TODO ucitaj ostale podatke (lokacija, uredaji)
+	}
+
+	private void pripremiPosluzitelja() throws IOException {
+		ServerSocket posluzitelj = new ServerSocket(this.mreznaVrata, this.brojCekaca);
+		while (this.kraj) {
+			Socket veza = posluzitelj.accept();
+			MrezniRadnik mr = new MrezniRadnik(veza, konf);
+			mr.start();
+		}
 	}
 
 	public void ucitajKorisnike() throws IOException {
