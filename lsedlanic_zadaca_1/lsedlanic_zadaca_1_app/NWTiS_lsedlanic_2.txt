@@ -1,0 +1,5 @@
+ispis=1
+brojZadnjihSpremljenih=4
+datotekaSerijalizacije=datSer.ser
+mreznaVrata=8001
+brojCekaca=5
