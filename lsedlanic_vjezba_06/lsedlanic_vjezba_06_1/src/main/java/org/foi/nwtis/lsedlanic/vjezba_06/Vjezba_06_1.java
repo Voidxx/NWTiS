@@ -17,9 +17,8 @@ public class Vjezba_06_1 extends HttpServlet {
 	 * @see HttpServlet#service(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
-	protected void service(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		// TODO Auto-generated method stub
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		super.service(req, resp);
 	}
 
 	/**

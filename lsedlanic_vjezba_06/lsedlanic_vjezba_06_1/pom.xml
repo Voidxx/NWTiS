@@ -28,6 +28,38 @@
  <failOnMissingWebXml>false</failOnMissingWebXml>
  </configuration>
  </plugin>
+ 
+ <plugin>
+ <groupId>org.codehaus.cargo</groupId>
+ <artifactId>cargo-maven3-plugin</artifactId>
+ <version>1.10.6</version>
+ <configuration>
+ <container>
+ <containerId>tomcat10x</containerId>
+ <type>remote</type>
+ </container>
+ <configuration>
+ <type>runtime</type>
+ <properties>
+ <cargo.remote.username>manager</cargo.remote.username>
+ <cargo.remote.password>FOI2</cargo.remote.password>
+ <cargo.protocol>http</cargo.protocol>
+ <cargo.hostname>localhost</cargo.hostname>
+ <cargo.servlet.port>8084</cargo.servlet.port>
+ </properties>
+ </configuration>
+ <deployables>
+ <deployable>
+ <groupId>${project.groupId}</groupId>
+ <artifactId>${project.artifactId}</artifactId>
+ <type>war</type>
+ <properties>
+ <context>${war.name}</context>
+ </properties>
+ </deployable>
+ </deployables>
+ </configuration>
+ </plugin> 
  </plugins>
  </build>
  <dependencies>
@@ -37,5 +69,16 @@
  		<version>10.0.0</version>
  		<scope>provided</scope>
  	</dependency>
+ 			<dependency>
+			<groupId>org.foi.nwtis.lsedlanic</groupId>
+			<artifactId>lsedlanic_vjezba_05_1</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+		
+				<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.7.1</version>
+		</dependency>
  </dependencies>
 </project>
