@@ -45,8 +45,36 @@ public class RestAerodromi {
 		return odgovor;
 	}
 
-	public Response dajAerodrom(String icao) {
-		return null;
+	@GET
+	@Path("{icao}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response dajAerodrom(@PathParam("icao") String icao) {
+		List<Aerodrom> aerodromi = new ArrayList<>();
+		Aerodrom ad = new Aerodrom("LDZA", "Airport Zagreb", "HR", new Lokacija("0", "0"));
+		aerodromi.add(ad);
+		ad = new Aerodrom("LDVA", "Airport Varaždin", "HR", new Lokacija("0", "0"));
+		aerodromi.add(ad);
+		ad = new Aerodrom("EDDF", "Airport Frankfurt", "DE", new Lokacija("0", "0"));
+		aerodromi.add(ad);
+		ad = new Aerodrom("EDDB", "Airport Berlin", "DE", new Lokacija("0", "0"));
+		aerodromi.add(ad);
+		ad = new Aerodrom("LOWW", "Airport Vienna", "AT", new Lokacija("0", "0"));
+		aerodromi.add(ad);
+
+		Aerodrom aerodrom = null;
+		for (Aerodrom a : aerodromi) {
+			if (a.getIcao().compareTo(icao) == 0) {
+				aerodrom = a;
+				break;
+			}
+		}
+
+		if (aerodrom == null) {
+			return Response.noContent().build();
+		}
+
+		Response odgovor = Response.ok().entity(aerodrom).build();
+		return odgovor;
 	}
 
 	@GET
