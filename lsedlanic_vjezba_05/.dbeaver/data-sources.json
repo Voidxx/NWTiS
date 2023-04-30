@@ -1,0 +1,56 @@
+{
+	"folders": {},
+	"connections": {
+		"hsqldb_server-1872ca41582-19cd50ed17045143": {
+			"provider": "generic",
+			"driver": "hsqldb_server",
+			"name": "HSQLDB – nwtis_3– SA",
+			"save-password": true,
+			"configuration": {
+				"host": "localhost",
+				"port": "9001",
+				"database": "nwtis_3",
+				"url": "jdbc:hsqldb:hsql://localhost:9001/nwtis_3",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"auth-model": "native"
+			}
+		},
+		"hsqldb_server-1872ca812df-71fc136333e9225f": {
+			"provider": "generic",
+			"driver": "hsqldb_server",
+			"name": "HSQLDB - nwtis_3 – nwtis_3",
+			"save-password": true,
+			"configuration": {
+				"host": "localhost",
+				"port": "9001",
+				"database": "nwtis_3",
+				"url": "jdbc:hsqldb:hsql://localhost:9001/nwtis_3",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"auth-model": "native",
+				"handlers": {}
+			},
+			"filters": [
+				{
+					"type": "org.jkiss.dbeaver.model.struct.rdb.DBSSchema",
+					"enabled": true,
+					"include": [
+						"PUBLIC"
+					]
+				}
+			]
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"auto-close-transactions": false
+		}
+	}
+}

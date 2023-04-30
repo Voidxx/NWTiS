@@ -1,0 +1,1 @@
+package org.foi.nwtis.lsedlanic_vjezba_05;
