@@ -1,0 +1,2 @@
+OpenSkyNetwork.korisnik=lsedlanic
+OpenSkyNetwork.lozinka=ghosts

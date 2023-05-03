@@ -8,8 +8,14 @@ cd /opt/payara-web-6.2023.1/glassfish/bin
 
 
 #TEST
-curl -X OPTIONS -H "Accept: application/vnd.sun.wadl+xml" "http://localhost:8080/dkermek_zadaca_2_wa_1/api/aerodromi"
+curl -X OPTIONS -H "Accept: application/vnd.sun.wadl+xml" "http://localhost:8080/lsedlanic_zadaca_2_wa_1/api/aerodromi"
 
-curl -X GET -H "Accept: application/json" "http://localhost:8080/dkermek_zadaca_2_wa_1/api/aerodromi"
-curl -X GET -H "Accept: application/json" "http://localhost:8080/dkermek_zadaca_2_wa_1/api/aerodromi/LDZA"
-curl -X GET -H "Accept: application/json" "http://localhost:8080/dkermek_zadaca_2_wa_1/api/aerodromi/LDZA/LOWW"
+curl -X GET -H "Accept: application/json" "http://localhost:8080/lsedlanic_zadaca_2_wa_1/api/aerodromi"
+curl -X GET -H "Accept: application/json" "http://localhost:8080/lsedlanic_zadaca_2_wa_1/api/aerodromi/LDZA"
+curl -X GET -H "Accept: application/json" "http://localhost:8080/lsedlanic_zadaca_2_wa_1/api/aerodromi/LDZA/LOWW"
+
+
+#BAZA
+
+cd /opt/hsqldb-2.7.1/hsqldb/data
+sudo java -classpath ../lib/hsqldb.jar org.hsqldb.server.Server --database.0 file:nwtis_3 --dbname.0 nwtis_3 --port 9001 
