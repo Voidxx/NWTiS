@@ -1,0 +1,7 @@
+adresa.wa_1=http://200.20.0.4:8080/lsedlanic/api/
+stranica.brojRedova=15
+autor.ime=Leon
+autor.prezime=Sedlanić
+autor.predmet=NWTiS
+aplikacija.godina=2023.
+aplikacija.verzija=1.0

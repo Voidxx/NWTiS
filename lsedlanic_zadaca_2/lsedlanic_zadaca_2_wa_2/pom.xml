@@ -1,27 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.foi.nwtis.lsedlanic</groupId>
-  <artifactId>lsedlanic_zadaca_2_wa_2</artifactId>
-  <version>1.0.0</version>
-  <packaging>war</packaging>
-  <name>lsedlanic_zadaca_2_wa_2</name>
-  
-  <repositories>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.foi.nwtis.lsedlanic</groupId>
+	<artifactId>lsedlanic_zadaca_2_wa_2</artifactId>
+	<version>1.0.0</version>
+	<packaging>war</packaging>
+	<name>lsedlanic_zadaca_2_wa_2</name>
+	<repositories>
 		<repository>
 			<id>NWTiS</id>
 			<name>NWTiS</name>
 			<url>http://nwtis.foi.hr:8088/repository/nwtis_2023/</url>
 		</repository>
 	</repositories>
-  
-  <properties>
+	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 		<servlet.port>8080</servlet.port>
 		<ServerEE.adminPort>4848</ServerEE.adminPort>
 		<ServerEE.username>admin</ServerEE.username>
-		<ServerEE.password></ServerEE.password>
+		<ServerEE.password />
 		<ServerEE.hostname>localhost</ServerEE.hostname>
 		<ServerEE.domainName>domain1</ServerEE.domainName>
 		<ServerEE.glassfish.home>/opt/glassfish-full-7.0.1/</ServerEE.glassfish.home>
@@ -209,6 +207,17 @@
 			<artifactId>nwtis_rest_lib</artifactId>
 			<version>3.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp.jstl</groupId>
+			<artifactId>javax.servlet.jsp.jstl-api</artifactId>
+			<version>1.2.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.web</groupId>
+			<artifactId>jstl-impl</artifactId>
+			<version>1.2</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
-  
 </project>
