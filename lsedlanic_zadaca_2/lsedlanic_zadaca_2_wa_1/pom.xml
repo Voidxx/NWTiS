@@ -5,7 +5,7 @@
 	<version>1.0.0.</version>
 	<packaging>war</packaging>
 	<name>lsedlanic_zadaca_2_wa_1</name>
-		<repositories>
+	<repositories>
 		<repository>
 			<id>NWTiS</id>
 			<name>NWTiS</name>
@@ -191,6 +191,11 @@
 			<groupId>org.foi.nwtis</groupId>
 			<artifactId>nwtis_rest_lib</artifactId>
 			<version>3.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.10.1</version>
 		</dependency>
 	</dependencies>
 </project>

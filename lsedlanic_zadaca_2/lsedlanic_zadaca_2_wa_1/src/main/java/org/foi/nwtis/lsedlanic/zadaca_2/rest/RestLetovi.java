@@ -11,15 +11,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import org.foi.nwtis.Konfiguracija;
-import org.foi.nwtis.podaci.Let;
 import org.foi.nwtis.podaci.LetPolazak;
 import org.foi.nwtis.rest.klijenti.NwtisRestIznimka;
 import org.foi.nwtis.rest.klijenti.OSKlijent;
 import org.foi.nwtis.rest.podaci.LetAviona;
 import jakarta.annotation.Resource;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.json.JsonArray;
 import jakarta.servlet.ServletContext;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -31,6 +31,7 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 @Path("letovi")
 @RequestScoped
@@ -44,74 +45,60 @@ public class RestLetovi {
 
 
   @GET
-  @Path("{icao}?dan=")
+  @Path("{icao}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajLetoveAerodromeNaDan(@PathParam("icao") String icao,
       @QueryParam("odBroja") String odBroja, @QueryParam("broj") String broj,
-      @QueryParam("dan") String dan) throws ParseException {
+      @QueryParam("dan") @NotNull String dan) throws ParseException {
+    Response odgovor = null;
+    String korisnik = (String) context.getAttribute("OpenSkyNetwork.korisnik");
+    String lozinka = (String) context.getAttribute("OpenSkyNetwork.lozinka");
 
-    var konfig = (Konfiguracija) context.getAttribute("konfig");
-    var korisnik = konfig.dajPostavku("OpenSkyNetwork.korisnik");
-    var lozinka = konfig.dajPostavku("OpenSkyNetwork.lozinka");
-
-    try {
-      int intValue = Integer.parseInt(odBroja);
-    } catch (NumberFormatException e) {
-      odBroja = "1";
-    }
-    try {
-      int intValue = Integer.parseInt(broj);
-    } catch (NumberFormatException e) {
-      odBroja = "20";
-    }
-    if (odBroja == null)
-      odBroja = "1";
-    if (broj == null) {
-      broj = "20";
-    }
-    List<Let> letovi = new ArrayList<Let>();
+    odBroja = validacijaOdBrojaZaStranicenje(odBroja);
+    broj = validacijaBrojaZaStranicenje(broj);
     DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
     Date datumOd = dateFormat.parse(dan);
 
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(datumOd);
     calendar.add(Calendar.DAY_OF_YEAR, 1);
-
     Date datumDo = calendar.getTime();
 
-    long odVremena = datumOd.getTime();
-    long doVremena = datumDo.getTime();
+    long odVremena = datumOd.getTime() / 1000;
+    long doVremena = datumDo.getTime() / 1000;
     OSKlijent oSKlijent = new OSKlijent(korisnik, lozinka);
-    // polasci
-    List<LetAviona> avioniPolasci;
+
+    List<LetAviona> avioniPolasci = new ArrayList<LetAviona>();
     try {
       avioniPolasci = oSKlijent.getDepartures(icao, odVremena, doVremena);
-      if (avioniPolasci != null) {
-        int i = 1;
-        for (LetAviona a : avioniPolasci) {
-          if (i >= Integer.parseInt(odBroja) && i < Integer.parseInt(broj)) {
-            letovi.add(new Let(a.getIcao24(), a.getEstArrivalAirport()));
-            i++;
-          }
+      for (int i = avioniPolasci.size() - 1; i >= 0; i--) {
+        if (i < Integer.parseInt(odBroja)
+            || i > Integer.parseInt(broj) + Integer.parseInt(odBroja) - 1
+            || (i > Integer.parseInt(broj) - 1 && i < avioniPolasci.size() - 1)) {
+          avioniPolasci.remove(i);
         }
       }
     } catch (NwtisRestIznimka e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    Response odgovor = Response.ok().entity(letovi).build();
+    if (avioniPolasci.isEmpty())
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(avioniPolasci).build();
     return odgovor;
   }
 
   @GET
-  @Path("{icaoOd}/{icaoDo}?dan=")
+  @Path("{icaoOd}/{icaoDo}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajLetoveOdDoAerodromaNaDan(@PathParam("icaoOd") String icaoOd,
-      @PathParam("icaoDo") String icaoDo, @QueryParam("dan") String dan) throws ParseException {
-
-    var konfig = (Konfiguracija) context.getAttribute("konfig");
-    var korisnik = konfig.dajPostavku("OpenSkyNetwork.korisnik");
-    var lozinka = konfig.dajPostavku("OpenSkyNetwork.lozinka");
-    List<Let> letovi = new ArrayList<Let>();
+      @PathParam("icaoDo") String icaoDo, @QueryParam("dan") @NotNull String dan)
+      throws ParseException {
+    Response odgovor = null;
+    String korisnik = (String) context.getAttribute("OpenSkyNetwork.korisnik");
+    String lozinka = (String) context.getAttribute("OpenSkyNetwork.lozinka");
     DateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
     Date datumOd = dateFormat.parse(dan);
 
@@ -121,30 +108,28 @@ public class RestLetovi {
 
     Date datumDo = calendar.getTime();
 
-    long odVremena = datumOd.getTime();
-    long doVremena = datumDo.getTime();
+    long odVremena = datumOd.getTime() / 1000;
+    long doVremena = datumDo.getTime() / 1000;
     OSKlijent oSKlijent = new OSKlijent(korisnik, lozinka);
-    // polasci
-    List<LetAviona> avioniPolasciNaPrvomIcao;
-    List<LetAviona> avioniDolasciNaDrugomIcao;
+    List<LetAviona> avioniPolasciSaPrvogNaDrugi = new ArrayList<LetAviona>();
+    List<LetAviona> avioniPolasciSaPrvog;
     try {
-      avioniPolasciNaPrvomIcao = oSKlijent.getDepartures(icaoOd, odVremena, doVremena);
-      avioniDolasciNaDrugomIcao = oSKlijent.getArrivals(icaoDo, odVremena, doVremena);
-      if (avioniPolasciNaPrvomIcao != null) {
-        for (LetAviona a : avioniPolasciNaPrvomIcao) {
-          for (LetAviona b : avioniDolasciNaDrugomIcao) {
-            if (icaoDo == a.getEstArrivalAirport())
-              letovi.add(new Let(a.getIcao24(), a.getEstArrivalAirport()));
-            else if (icaoOd == b.getEstArrivalAirport())
-              letovi.add(new Let(b.getIcao24(), b.getEstArrivalAirport()));
-          }
+      avioniPolasciSaPrvog = oSKlijent.getDepartures(icaoOd, odVremena, doVremena);
+
+      if (avioniPolasciSaPrvog != null) {
+        for (LetAviona a : avioniPolasciSaPrvog) {
+          if (icaoDo.equals(a.getEstArrivalAirport()))
+            avioniPolasciSaPrvogNaDrugi.add(a);
         }
       }
     } catch (NwtisRestIznimka e) {
       e.printStackTrace();
     }
-
-    Response odgovor = Response.ok().entity(letovi).build();
+    if (avioniPolasciSaPrvogNaDrugi.isEmpty())
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(avioniPolasciSaPrvogNaDrugi).build();
     return odgovor;
   }
 
@@ -153,6 +138,7 @@ public class RestLetovi {
   @Path("spremljeni")
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajSpremljene() {
+    Response odgovor = null;
     String queryLetovi = "select * from LETOVI_POLASCI";
     LetAviona let = null;
     PreparedStatement stmt = null;
@@ -195,7 +181,11 @@ public class RestLetovi {
         e.printStackTrace();
       }
     }
-    Response odgovor = Response.ok().entity(let).build();
+    if (let == null)
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(let).build();
     return odgovor;
   }
 
@@ -203,6 +193,7 @@ public class RestLetovi {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response dodajLet(LetPolazak let) {
+    Response odgovor = null;
     String insertQuery =
         "INSERT INTO LETOVI_POLASCI (ID, ICAO24, FIRSTSEEN, ESTDEPARTUREAIRPORT, LASTSEEN, ESTARRIVALAIRPORT, CALLSIGN, ESTDEPARTUREAIRPORTHORIZDISTANCE, ESTDEPARTUREAIRPORTVERTDISTANCE, ESTARRIVALAIRPORTHORIZDISTANCE, ESTARRIVALAIRPORTVERTDISTANCE,DEPARTUREAIRPORTCANDIDATESCOUNT, ARRIVALAIRPORTCANDIDATESCOUNT, STORED) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now())";
     PreparedStatement stmt = null;
@@ -223,21 +214,22 @@ public class RestLetovi {
       stmt.executeUpdate();
 
     } catch (SQLException e) {
-      e.printStackTrace();
+      odgovor = Response.status(Status.NOT_FOUND).entity(e).build();
     } finally {
       try {
         if (stmt != null && !stmt.isClosed())
           stmt.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        odgovor = Response.status(Status.NOT_FOUND).entity(e).build();
       }
     }
-    return Response.ok().entity("Let spremljen.").build();
+    return odgovor;
   }
 
   @DELETE
   @Path("{id}")
   public Response obrisiLet(@PathParam("id") String id) {
+    Response odgovor = null;
     String deleteQuery = "DELETE FROM LETOVI_POLASCI WHERE ID = ?";
     PreparedStatement stmt = null;
     try (Connection con = ds.getConnection();) {
@@ -245,16 +237,38 @@ public class RestLetovi {
       stmt.setString(1, id);
       stmt.executeUpdate();
     } catch (SQLException e) {
-      e.printStackTrace();
+      odgovor = Response.status(Status.NOT_FOUND).entity(e).build();
     } finally {
       try {
         if (stmt != null && !stmt.isClosed())
           stmt.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        odgovor = Response.status(Status.NOT_FOUND).entity(e).build();
       }
     }
-    return Response.ok().entity("Let obrisan.").build();
+    return odgovor;
+  }
+
+  private String validacijaOdBrojaZaStranicenje(String odBroj) {
+    try {
+      int intValue = Integer.parseInt(odBroj);
+    } catch (NumberFormatException e) {
+      odBroj = "1";
+    }
+    if (odBroj == null || Integer.parseInt(odBroj) < 0)
+      odBroj = "1";
+    return odBroj;
+  }
+
+  private String validacijaBrojaZaStranicenje(String broj) {
+    try {
+      int intValue = Integer.parseInt(broj);
+    } catch (NumberFormatException e) {
+      broj = "20";
+    }
+    if (broj == null || Integer.parseInt(broj) < 0)
+      broj = "20";
+    return broj;
   }
 
 }

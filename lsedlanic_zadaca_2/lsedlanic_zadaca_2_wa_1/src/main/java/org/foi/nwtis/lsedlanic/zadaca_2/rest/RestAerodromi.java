@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.foi.nwtis.podaci.Airport;
+import org.foi.nwtis.podaci.Aerodrom;
+import org.foi.nwtis.podaci.Lokacija;
+import org.foi.nwtis.podaci.NajvecaUdaljenostIzmeduAerodromaUDrzavi;
 import org.foi.nwtis.podaci.Udaljenost;
 import org.foi.nwtis.podaci.UdaljenostIzmeduAerodroma;
 import jakarta.annotation.Resource;
@@ -32,45 +34,27 @@ public class RestAerodromi {
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajSveAerodrome(@QueryParam("odBroja") String odBroja,
       @QueryParam("broj") String broj) {
-    List<Airport> aerodromi = new ArrayList<Airport>();
+    Response odgovor = null;
+    List<Aerodrom> aerodromi = new ArrayList<Aerodrom>();
     String queryAerodromi =
         "select * from AIRPORTS ORDER BY ICAO OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
     PreparedStatement stmt1 = null;
     try (Connection con = ds.getConnection();) {
       stmt1 = con.prepareStatement(queryAerodromi);
-      try {
-        int intValue = Integer.parseInt(odBroja);
-      } catch (NumberFormatException e) {
-        odBroja = "1";
-      }
-      try {
-        int intValue = Integer.parseInt(broj);
-      } catch (NumberFormatException e) {
-        odBroja = "20";
-      }
-      if (odBroja == null)
-        odBroja = "1";
-      if (broj == null)
-        broj = "20";
-      stmt1.setString(1, odBroja);
-      stmt1.setString(2, broj);
+      odBroja = validacijaOdBrojaZaStranicenje(odBroja);
+      broj = validacijaBrojaZaStranicenje(broj);
+      stmt1.setInt(1, Integer.parseInt(odBroja) - 1);
+      stmt1.setInt(2, Integer.parseInt(broj));
 
       ResultSet rs = stmt1.executeQuery();
       while (rs.next()) {
-        String icao = rs.getString("ICAO");
-        String type = rs.getString("TYPE");
-        String name = rs.getString("NAME");
-        String elevation_ft = rs.getString("ELEVATION_FT");
-        String continent = rs.getString("CONTINENT");
-        String iso_country = rs.getString("ISO_COUNTRY");
-        String iso_region = rs.getString("ISO_REGION");
-        String municipality = rs.getString("MUNICIPALITY");
-        String gps_code = rs.getString("GPS_CODE");
-        String iata_code = rs.getString("IATA_CODE");
-        String local_code = rs.getString("LOCAL_CODE");
-        String coordinates = rs.getString("COORDINATES");
-        Airport aerodrom = new Airport(icao, type, name, elevation_ft, continent, iso_country,
-            iso_region, municipality, gps_code, iata_code, local_code, coordinates);
+        String icao = rs.getString("ICAO");;
+        String naziv = rs.getString("NAME");
+        String drzava = rs.getString("ISO_COUNTRY");
+        String koordinate = rs.getString("COORDINATES");
+        String[] koordinatePodijeljeno = koordinate.split(",", 2);
+        Lokacija lokacija = new Lokacija(koordinatePodijeljeno[0], koordinatePodijeljeno[1]);
+        Aerodrom aerodrom = new Aerodrom(icao, naziv, drzava, lokacija);
         aerodromi.add(aerodrom);
       }
 
@@ -84,16 +68,23 @@ public class RestAerodromi {
         e.printStackTrace();
       }
     }
-    Response odgovor = Response.ok().entity(aerodromi).build();
+    if (aerodromi.isEmpty())
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(aerodromi).build();
     return odgovor;
+
   }
+
 
   // trebal bi mozda vracati ko sa vjezbi aerodrom a ne airport
   @GET
   @Path("{icao}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajAerodrom(@PathParam("icao") String icao) {
-    Airport aerodrom = null;
+    Response odgovor = null;
+    Aerodrom aerodrom = null;
     String queryAerodromi = "select * from AIRPORTS WHERE ICAO = ?";
     PreparedStatement stmt1 = null;
     try (Connection con = ds.getConnection();) {
@@ -101,20 +92,13 @@ public class RestAerodromi {
       stmt1.setString(1, icao);
       ResultSet rs = stmt1.executeQuery();
       while (rs.next()) {
-        String Icao = rs.getString("ICAO");
-        String type = rs.getString("TYPE");
-        String name = rs.getString("NAME");
-        String elevation_ft = rs.getString("ELEVATION_FT");
-        String continent = rs.getString("CONTINENT");
-        String iso_country = rs.getString("ISO_COUNTRY");
-        String iso_region = rs.getString("ISO_REGION");
-        String municipality = rs.getString("MUNICIPALITY");
-        String gps_code = rs.getString("GPS_CODE");
-        String iata_code = rs.getString("IATA_CODE");
-        String local_code = rs.getString("LOCAL_CODE");
-        String coordinates = rs.getString("COORDINATES");
-        aerodrom = new Airport(Icao, type, name, elevation_ft, continent, iso_country, iso_region,
-            municipality, gps_code, iata_code, local_code, coordinates);
+        String Icao = rs.getString("ICAO");;
+        String naziv = rs.getString("NAME");
+        String drzava = rs.getString("ISO_COUNTRY");
+        String koordinate = rs.getString("COORDINATES");
+        String[] koordinatePodijeljeno = koordinate.split(",", 2);
+        Lokacija lokacija = new Lokacija(koordinatePodijeljeno[0], koordinatePodijeljeno[1]);
+        aerodrom = new Aerodrom(Icao, naziv, drzava, lokacija);
       }
 
     } catch (SQLException e) {
@@ -127,7 +111,11 @@ public class RestAerodromi {
         e.printStackTrace();
       }
     }
-    Response odgovor = Response.ok().entity(aerodrom).build();
+    if (aerodrom != null)
+      odgovor = Response.ok().entity(aerodrom).build();
+    else
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
     return odgovor;
   }
 
@@ -137,6 +125,7 @@ public class RestAerodromi {
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajUdaljenostiAerodoma(@PathParam("icaoOd") String icaoFrom,
       @PathParam("icaoDo") String icaoTo) {
+    Response odgovor = null;
     var udaljenosti = new ArrayList<Udaljenost>();
     String query = "select ICAO_FROM, ICAO_TO, COUNTRY, DIST_CTRY from "
         + "AIRPORTS_DISTANCE_MATRIX where ICAO_FROM = ? AND ICAO_TO =  ?";
@@ -166,7 +155,11 @@ public class RestAerodromi {
       }
     }
 
-    Response odgovor = Response.ok().entity(udaljenosti).build();
+    if (udaljenosti.isEmpty())
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(udaljenosti).build();
     return odgovor;
   }
 
@@ -177,29 +170,16 @@ public class RestAerodromi {
       @QueryParam("odBroja") String odBroja, @QueryParam("broj") String broj) {
     Response odgovor = null;
     var udaljenosti = new ArrayList<UdaljenostIzmeduAerodroma>();
-    try {
-      int intValue = Integer.parseInt(odBroja);
-    } catch (NumberFormatException e) {
-      odBroja = "1";
-    }
-    try {
-      int intValue = Integer.parseInt(broj);
-    } catch (NumberFormatException e) {
-      odBroja = "20";
-    }
-    if (odBroja == null) {
-      odBroja = "1";
-    }
-    if (broj == null) {
-      broj = "20";
-    }
+    odBroja = validacijaOdBrojaZaStranicenje(odBroja);
+    broj = validacijaBrojaZaStranicenje(broj);
     String queryAerodromi =
-        "SELECT ICAO_TO, DIST_TOT FROM AIRPORTS_DISTANCE_MATRIX WHERE EXISTS(SELECT ICAO_FROM FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_TO = ?) AND ICAO_TO != ? ORDER BY ICAO_TO OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        "SELECT DISTINCT ICAO_TO, DIST_TOT FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_FROM = ? OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
     PreparedStatement stmt1 = null;
     try (Connection con = ds.getConnection();) {
       stmt1 = con.prepareStatement(queryAerodromi);
       stmt1.setString(1, icao);
-      stmt1.setString(2, icao);
+      stmt1.setInt(2, Integer.parseInt(odBroja) - 1);
+      stmt1.setInt(3, Integer.parseInt(broj));
       ResultSet rs = stmt1.executeQuery();
       while (rs.next()) {
         String icaoDo = rs.getString("ICAO_TO");
@@ -222,7 +202,11 @@ public class RestAerodromi {
       }
     }
 
-    odgovor = Response.ok().entity(udaljenosti).build();
+    if (udaljenosti.isEmpty())
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(udaljenosti).build();
     return odgovor;
   }
 
@@ -231,10 +215,9 @@ public class RestAerodromi {
   @Produces(MediaType.APPLICATION_JSON)
   public Response dajNajvećuUdaljenostAerodroma(@PathParam("icao") String icao) {
     Response odgovor = null;
-    Udaljenost konacnaUdaljenost = new Udaljenost("", 0);
-    var aerodromi = new ArrayList<String>();
+    NajvecaUdaljenostIzmeduAerodromaUDrzavi najvecaUdaljenost = null;
     String queryAerodromi =
-        "SELECT ICAO_TO, COUNTRY, DIST_CTRY FROM AIRPORTS_DISTANCE_MATRIX WHERE EXISTS(SELECT ICAO_FROM FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_FROM = ?) AND ICAO_TO != ? AND DIST_CTRY = (SELECT MAX(DIST_CTRY) FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_FROM = 'LDZA')";
+        "SELECT DISTINCT ICAO_TO, COUNTRY, DIST_CTRY FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_FROM = ? AND DIST_CTRY = (SELECT MAX(DIST_CTRY) FROM AIRPORTS_DISTANCE_MATRIX WHERE ICAO_FROM = ?)";
     PreparedStatement stmt1 = null;
 
     try (Connection con = ds.getConnection();) {
@@ -242,7 +225,12 @@ public class RestAerodromi {
       stmt1.setString(1, icao);
       stmt1.setString(2, icao);
       ResultSet rs = stmt1.executeQuery();
-
+      while (rs.next()) {
+        String drzava = rs.getString("COUNTRY");
+        String icaoDo = rs.getString("ICAO_TO");
+        float udaljenost = rs.getFloat("DIST_CTRY");
+        najvecaUdaljenost = new NajvecaUdaljenostIzmeduAerodromaUDrzavi(drzava, icaoDo, udaljenost);
+      }
     } catch (SQLException e) {
       e.printStackTrace();
     } finally {
@@ -253,7 +241,34 @@ public class RestAerodromi {
         e.printStackTrace();
       }
     }
-    odgovor = Response.ok().entity(konacnaUdaljenost).build();
+    if (najvecaUdaljenost == null)
+      odgovor = Response.status(Status.NOT_FOUND).entity(JsonArray.EMPTY_JSON_ARRAY)
+          .type(MediaType.APPLICATION_JSON).build();
+    else
+      odgovor = Response.ok().entity(najvecaUdaljenost).build();
     return odgovor;
+  }
+
+
+  private String validacijaOdBrojaZaStranicenje(String odBroj) {
+    try {
+      int intValue = Integer.parseInt(odBroj);
+    } catch (NumberFormatException e) {
+      odBroj = "1";
+    }
+    if (odBroj == null || Integer.parseInt(odBroj) < 0)
+      odBroj = "1";
+    return odBroj;
+  }
+
+  private String validacijaBrojaZaStranicenje(String broj) {
+    try {
+      int intValue = Integer.parseInt(broj);
+    } catch (NumberFormatException e) {
+      broj = "20";
+    }
+    if (broj == null || Integer.parseInt(broj) < 0)
+      broj = "20";
+    return broj;
   }
 }

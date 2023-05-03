@@ -20,14 +20,14 @@ public class RestKlijentAerodroma {
   public List<Aerodrom> getAerodromi(int odBroja, int broj) {
     RestKKlijent rc = new RestKKlijent();
     Aerodrom[] json_Aerodromi = rc.getAerodromi(odBroja, broj);
-    List<Aerodrom> korisnici;
+    List<Aerodrom> aerodromi;
     if (json_Aerodromi == null) {
-      korisnici = new ArrayList<>();
+      aerodromi = new ArrayList<>();
     } else {
-      korisnici = Arrays.asList(json_Aerodromi);
+      aerodromi = Arrays.asList(json_Aerodromi);
     }
     rc.close();
-    return korisnici;
+    return aerodromi;
   }
 
   public List<Odgovor> getAerodromUdaljenosti(String icao, int odBroja, int broj) {

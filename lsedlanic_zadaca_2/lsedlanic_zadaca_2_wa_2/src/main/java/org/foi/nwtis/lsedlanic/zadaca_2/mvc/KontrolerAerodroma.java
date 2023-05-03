@@ -10,9 +10,11 @@ import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
 import jakarta.mvc.Models;
 import jakarta.mvc.View;
+import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 
 /**
  *
@@ -31,18 +33,30 @@ public class KontrolerAerodroma {
   @View("index.jsp")
   public void pocetak() {}
 
+  @Context
+  ServletContext context;
+
   @GET
   @Path("svi")
   @View("aerodromi.jsp")
-  public void getAerodromi() {
+  public void getAerodromi(@QueryParam("odBroja") int odBroja, @QueryParam("broj") int broj) {
     try {
       RestKlijentAerodroma rca = new RestKlijentAerodroma();
-      var aerodromi = rca.getAerodromi();
+      if (odBroja == 0)
+        odBroja = 1;
+      if (broj == 0)
+        broj = 20;
+      var aerodromi = rca.getAerodromi(odBroja, broj);
+      String brojRedova = (String) context.getAttribute("stranica.brojRedova");
       model.put("aerodromi", aerodromi);
+      model.put("odBroja", odBroja);
+      model.put("broj", broj);
+      model.put("brojRedova", brojRedova);
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
+
 
   @GET
   @Path("icao")

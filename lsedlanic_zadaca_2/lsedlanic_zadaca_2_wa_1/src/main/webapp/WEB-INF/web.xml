@@ -5,8 +5,11 @@
 https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
     <display-name>lsedlanic_zadaca_02</display-name>
+    <listener>
+<listener-class>org.foi.nwtis.lsedlanic.zadaca_2.slusaci.KontekstSlusac</listener-class>
+</listener>
     <context-param>
         <param-name>konfiguracija</param-name>
-        <param-value>NWTiS.db.config_1.xml</param-value>
+        <param-value>NWTiS.db.config_1.txt</param-value>
     </context-param>
 </web-app>
