@@ -5,7 +5,6 @@
 package org.foi.nwtis.lsedlanic.zadaca_2.mvc;
 
 import org.foi.nwtis.lsedlanic.zadaca_2.rest.RestKlijentAerodroma;
-
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.mvc.Controller;
@@ -24,45 +23,65 @@ import jakarta.ws.rs.QueryParam;
 @RequestScoped
 public class KontrolerAerodroma {
 
-	@Inject
-	private Models model;
+  @Inject
+  private Models model;
 
-	@GET
-	@Path("pocetak")
-	@View("index.jsp")
-	public void pocetak() {
-	}
+  @GET
+  @Path("pocetak")
+  @View("index.jsp")
+  public void pocetak() {}
 
-	@GET
-	@Path("svi")
-	@View("aerodromi.jsp")
-	public void getAerodromi() {
-		try {
-			RestKlijentAerodroma rca = new RestKlijentAerodroma();
-			var aerodromi = rca.getAerodromi();
-			model.put("aerodromi", aerodromi);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+  @GET
+  @Path("svi")
+  @View("aerodromi.jsp")
+  public void getAerodromi() {
+    try {
+      RestKlijentAerodroma rca = new RestKlijentAerodroma();
+      var aerodromi = rca.getAerodromi();
+      model.put("aerodromi", aerodromi);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
-	@GET
-	@Path("icao")
-	@View("aerodrom.jsp")
-	public void getAerodrom(@QueryParam("icao") String icao) {
-		try {
-			RestKlijentAerodroma rca = new RestKlijentAerodroma();
-			var aerodrom = rca.getAerodrom(icao);
-			model.put("aerodrom", aerodrom);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+  @GET
+  @Path("icao")
+  @View("aerodrom.jsp")
+  public void getAerodrom(@QueryParam("icao") String icao) {
+    try {
+      RestKlijentAerodroma rca = new RestKlijentAerodroma();
+      var aerodrom = rca.getAerodrom(icao);
+      model.put("aerodrom", aerodrom);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
-	@GET
-	@Path("udaljenosti2aerodroma")
-	@View("aerodromiUdaljenosti.jsp")
-	public void getAerodromiUdaljenost(@QueryParam("icaoOd") String icaoOd, @QueryParam("icaoDo") String icaoDo) {
-	}
+  @GET
+  @Path("icao/udaljenost")
+  @View("aerodromiUdaljenosti.jsp")
+  public void getAerodromiUdaljenost(@QueryParam("icaoOd") String icaoOd,
+      @QueryParam("icaoDo") String icaoDo) {
+    try {
+      RestKlijentAerodroma rca = new RestKlijentAerodroma();
+      var udaljenosti = rca.getAerodromiUdaljenost(icaoOd, icaoDo);
+      model.put("udaljenosti", udaljenosti);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  @GET
+  @Path("icao/najduljiPutDrzave")
+  @View("aerodromiNajvecaUdaljenost.jsp")
+  public void getAerodromNajvecaUdaljenost(@QueryParam("icao") String icao) {
+    try {
+      RestKlijentAerodroma rca = new RestKlijentAerodroma();
+      var udaljenosti = rca.getAerodromNajvecaUdaljenost(icao);
+      model.put("udaljenosti", udaljenosti);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
 }

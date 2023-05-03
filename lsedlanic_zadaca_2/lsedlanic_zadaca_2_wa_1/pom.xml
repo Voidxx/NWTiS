@@ -5,6 +5,13 @@
 	<version>1.0.0.</version>
 	<packaging>war</packaging>
 	<name>lsedlanic_zadaca_2_wa_1</name>
+		<repositories>
+		<repository>
+			<id>NWTiS</id>
+			<name>NWTiS</name>
+			<url>http://nwtis.foi.hr:8088/repository/nwtis_2023/</url>
+		</repository>
+	</repositories>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
@@ -179,6 +186,11 @@
 			<groupId>org.foi.nwtis.lsedlanic</groupId>
 			<artifactId>lsedlanic_zadaca_2_lib_2</artifactId>
 			<version>1.0.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.foi.nwtis</groupId>
+			<artifactId>nwtis_rest_lib</artifactId>
+			<version>3.0.0</version>
 		</dependency>
 	</dependencies>
 </project>
