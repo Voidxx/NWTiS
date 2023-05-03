@@ -1,0 +1,13 @@
+ispis=1
+maksCekanje=1000
+mreznaVrata=8000
+brojCekaca=5
+brojRadnika=10
+datotekaKorisnika=korisnici.csv
+datotekaLokacija=lokacije.csv
+datotekaUredaja=uredaji.csv
+odstupanjeTemp=1
+odstupanjeVlaga=4
+odstupanjeTlak=1
+posluziteljUdaljenostiAdresa=localhost
+posluziteljUdaljenostiVrata=8001
